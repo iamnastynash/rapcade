@@ -1050,6 +1050,11 @@ a,
   letter-spacing: 0.12rem;
   text-transform: uppercase;
   box-shadow: 5px 5px 0 rgba(255, 73, 217, 0.18);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .touch-controls button:active {
@@ -1148,17 +1153,32 @@ a,
   }
 
   .canvas-shell {
-    display: grid;
-    gap: 12px;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #gameCanvas {
+    border: 3px solid rgba(255, 73, 217, 0.7);
+    box-shadow:
+      inset 0 0 36px rgba(64, 246, 255, 0.09),
+      0 12px 30px rgba(0, 0, 0, 0.34);
   }
 
   .reset-button {
     position: static;
+    display: inline-grid;
     right: auto;
     bottom: auto;
-    justify-self: end;
-    margin: 0 12px 12px;
+    margin: 12px 0 0 auto;
+    padding: 10px 14px;
     transform: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .touch-controls {
