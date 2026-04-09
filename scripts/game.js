@@ -6,12 +6,28 @@ const scoreValueEl = document.getElementById("scoreValue");
 const timeValueEl = document.getElementById("timeValue");
 const bestValueEl = document.getElementById("bestValue");
 const statusLineEl = document.getElementById("statusLine");
+const leaderboardListEl = document.getElementById("leaderboardList");
+const leaderboardFormEl = document.getElementById("leaderboardForm");
+const leaderboardNameEl = document.getElementById("leaderboardName");
+const leaderboardSubmitEl = document.getElementById("leaderboardSubmit");
+const leaderboardNoteEl = document.getElementById("leaderboardNote");
 const jumpButtons = [...document.querySelectorAll("[data-jump]")];
 const touchButtons = [...document.querySelectorAll("[data-touch]")];
 const resetButton = document.getElementById("resetButton");
+const bootOverlayEl = document.getElementById("bootOverlay");
+const bootMessageEl = document.getElementById("bootMessage");
+const bootStationTimeEl = document.getElementById("bootStationTime");
+const bootSkipButtonEl = document.getElementById("bootSkipButton");
+const broadcastCopyEl = document.getElementById("broadcastCopy");
+const broadcastTimeEl = document.getElementById("broadcastTime");
 const musicPlayerTypeEl = document.getElementById("musicPlayerType");
 const musicPlayerTitleEl = document.getElementById("musicPlayerTitle");
 const musicPlayerDescriptionEl = document.getElementById("musicPlayerDescription");
+const boomboxAtmosphereEl = document.getElementById("boomboxAtmosphere");
+const boomboxTrackTitleEl = document.getElementById("boomboxTrackTitle");
+const boomboxTrackMetaEl = document.getElementById("boomboxTrackMeta");
+const cassetteSideLabelEl = document.getElementById("cassetteSideLabel");
+const boomboxTapeRackEl = document.getElementById("boomboxTapeRack");
 const winampTracklistEl = document.getElementById("winampTracklist");
 const winampClockEl = document.getElementById("winampClock");
 const winampLedPlayEl = document.querySelector(".winamp-led-play");
@@ -31,6 +47,9 @@ const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnbWZ4eWxjcXNjanRuZGpwaXJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MDIyOTIsImV4cCI6MjA5MTI3ODI5Mn0.F54kPiI0AR0vwkfT4okAyD1BxNafqVfljlzdUjjohg0";
 const PLAYLIST_ENDPOINT =
   `${SUPABASE_URL}/rest/v1/rapcade_playlist_public?select=position,title,artist,format_label,duration_seconds,duration_label,audio_url,cover_url&order=position.asc`;
+const LEADERBOARD_ENDPOINT =
+  `${SUPABASE_URL}/rest/v1/cash_rain_leaderboard_public?select=rank,player_name,score,played_at&order=rank.asc`;
+const LEADERBOARD_SUBMIT_ENDPOINT = `${SUPABASE_URL}/rest/v1/cash_rain_scores`;
 
 const GRAVITY = 0.34;
 const MOVE_SPEED = 2.88;
@@ -47,6 +66,55 @@ const BEST_SCORE_STORAGE_KEY = "rapcade-best-score";
 const BG_SOURCE_Y = 88;
 const BG_SOURCE_HEIGHT = 544;
 const COIN_FRAMES = 4;
+const LEADERBOARD_LIMIT = 5;
+
+const SUPABASE_HEADERS = {
+  apikey: SUPABASE_ANON_KEY,
+  Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+};
+
+const ATMOSPHERE_PROFILES = {
+  sunrise: {
+    label: "SUNRISE DRIVE",
+    radioCopy: "Sun-up signal for early studio runners.",
+    bootCopy: "Booting the skyline for the sunrise shift.",
+    skyTint: "rgba(255, 190, 124, 0.14)",
+    rainTrailColor: "rgba(255, 227, 173, 0.26)",
+    stars: false
+  },
+  day: {
+    label: "DAY SHIFT",
+    radioCopy: "Daylight hustle on the Rapcade frequency.",
+    bootCopy: "Powering the day-shift deck and city speakers.",
+    skyTint: "rgba(113, 190, 255, 0.12)",
+    rainTrailColor: "rgba(193, 233, 255, 0.18)",
+    stars: false
+  },
+  sunset: {
+    label: "SUNSET STATIC",
+    radioCopy: "Golden-hour traffic and late-session dreams.",
+    bootCopy: "Spinning up the sunset mix for the city block.",
+    skyTint: "rgba(255, 133, 102, 0.14)",
+    rainTrailColor: "rgba(255, 191, 143, 0.24)",
+    stars: true
+  },
+  night: {
+    label: "NEON NIGHT",
+    radioCopy: "Neon after-dark mix for studio runners.",
+    bootCopy: "Charging the neon night deck and warming the tubes.",
+    skyTint: "rgba(152, 72, 255, 0.14)",
+    rainTrailColor: "rgba(129, 217, 255, 0.2)",
+    stars: true
+  },
+  midnight: {
+    label: "MIDNIGHT SIGNAL",
+    radioCopy: "After-hours static for money runners and night owls.",
+    bootCopy: "Booting the skyline for the graveyard shift.",
+    skyTint: "rgba(72, 48, 145, 0.22)",
+    rainTrailColor: "rgba(112, 192, 255, 0.18)",
+    stars: true
+  }
+};
 
 const keys = {
   left: false,
@@ -61,17 +129,26 @@ let audioContext = null;
 let mediaSourceNode = null;
 let analyserNode = null;
 let masterGainNode = null;
+let sfxGainNode = null;
 let spectrumData = null;
 let spectrumFrame = 0;
 let eqFilters = [];
 let currentTrackIndex = 0;
 let isSeeking = false;
 let localPlayerReady = false;
+let audioUnlocked = false;
 let eqEnabled = true;
 let eqAutoMode = false;
 let currentEqPresetIndex = 0;
 let playlistTracks = [];
+let leaderboardEntries = [];
+let leaderboardOnline = true;
+let pendingLeaderboardScore = null;
+let leaderboardSubmitted = false;
+let currentAtmosphere = null;
+let atmosphereTimer = 0;
 let requestedAutoplay = false;
+let bootTimer = 0;
 
 const player = {
   x: canvas.width / 2 - 10,
@@ -290,6 +367,87 @@ function formatTime(totalSeconds) {
   return `${minutes}:${seconds}`;
 }
 
+function formatClockTime(date) {
+  return date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+function getAtmosphereKey(date = new Date()) {
+  const hour = date.getHours();
+
+  if (hour >= 5 && hour < 11) {
+    return "sunrise";
+  }
+
+  if (hour >= 11 && hour < 17) {
+    return "day";
+  }
+
+  if (hour >= 17 && hour < 21) {
+    return "sunset";
+  }
+
+  if (hour >= 21 || hour < 1) {
+    return "night";
+  }
+
+  return "midnight";
+}
+
+function applyAtmosphere(date = new Date()) {
+  const key = getAtmosphereKey(date);
+  currentAtmosphere = {
+    key,
+    ...ATMOSPHERE_PROFILES[key]
+  };
+
+  document.body.dataset.atmosphere = key;
+
+  if (bootMessageEl) {
+    bootMessageEl.textContent = currentAtmosphere.bootCopy;
+  }
+
+  const clockLabel = formatClockTime(date);
+
+  if (bootStationTimeEl) {
+    bootStationTimeEl.textContent = clockLabel;
+  }
+
+  if (broadcastCopyEl) {
+    broadcastCopyEl.textContent = currentAtmosphere.radioCopy;
+  }
+
+  if (broadcastTimeEl) {
+    broadcastTimeEl.textContent = clockLabel;
+  }
+
+  if (boomboxAtmosphereEl) {
+    boomboxAtmosphereEl.textContent = currentAtmosphere.label;
+  }
+}
+
+function startAtmosphereClock() {
+  applyAtmosphere();
+
+  if (atmosphereTimer) {
+    window.clearInterval(atmosphereTimer);
+  }
+
+  atmosphereTimer = window.setInterval(() => {
+    applyAtmosphere();
+  }, 60_000);
+}
+
+function sanitizePlayerName(value) {
+  return value
+    .toUpperCase()
+    .replace(/[^A-Z0-9 ._-]/g, "")
+    .trim()
+    .slice(0, 12);
+}
+
 function rectsIntersect(a, b) {
   return (
     a.x < b.x + b.w &&
@@ -379,6 +537,7 @@ function resetRound({ keepBest = true } = {}) {
   game.nextDropId = 1;
   resetPlayer();
   updateHud();
+  updateLeaderboardFormState();
   showStatus(getDefaultStatus(), 1400);
 }
 
@@ -392,6 +551,10 @@ function startRound() {
   game.elapsedMs = 0;
   game.spawnCooldownMs = 300;
   game.drops = [];
+  pendingLeaderboardScore = null;
+  leaderboardSubmitted = false;
+  updateLeaderboardFormState();
+  playUiSound("start");
   showStatus("Cash is falling. Stay clean and stack points.", 1400);
 }
 
@@ -404,8 +567,17 @@ function finishRound(mode, message) {
     persistBestScore();
   }
 
+  pendingLeaderboardScore = game.score;
+  leaderboardSubmitted = false;
   updateHud();
+  updateLeaderboardFormState();
   showStatus(message, 2400);
+
+  if (mode === "busted") {
+    playUiSound("bust");
+  } else if (qualifiesForLeaderboard(game.score)) {
+    showStatus(`Top five pace. Bank ${game.score} and tag the wall.`, 2400);
+  }
 }
 
 function getDifficultyMultiplier() {
@@ -492,6 +664,7 @@ function updateDrops() {
         playPickupSound();
         showStatus("+2 coin. Keep stacking.", 500);
       } else {
+        playUiSound("bill");
         showStatus("+1 bill.", 380);
       }
       updateHud();
@@ -582,6 +755,7 @@ function updatePlayer() {
     }
     player.vy = JUMP_FORCE;
     player.onGround = false;
+    playUiSound("jump");
     showStatus("Go get it.", 550);
   }
   jumpQueued = false;
@@ -621,6 +795,8 @@ function ensureAudioGraph() {
   spectrumData = new Uint8Array(analyserNode.frequencyBinCount);
   masterGainNode = audioContext.createGain();
   masterGainNode.gain.value = (Number(winampVolumeEl?.value) || 88) / 100;
+  sfxGainNode = audioContext.createGain();
+  sfxGainNode.gain.value = 0.12;
 
   eqFilters = EQ_FREQUENCIES.map((frequency, index) => {
     const filter = audioContext.createBiquadFilter();
@@ -640,9 +816,10 @@ function ensureAudioGraph() {
   for (let index = 0; index < eqFilters.length - 1; index += 1) {
     eqFilters[index].connect(eqFilters[index + 1]);
   }
-  eqFilters.at(-1).connect(analyserNode);
+  eqFilters[eqFilters.length - 1].connect(analyserNode);
   analyserNode.connect(masterGainNode);
   masterGainNode.connect(audioContext.destination);
+  sfxGainNode.connect(audioContext.destination);
 
   updateEqFilters();
   startSpectrumLoop();
@@ -654,6 +831,145 @@ async function resumeAudioContext() {
 
   if (audioContext && audioContext.state === "suspended") {
     await audioContext.resume();
+  }
+
+  audioUnlocked = Boolean(audioContext && audioContext.state === "running");
+}
+
+function playToneSequence(notes, volume = 0.1) {
+  ensureAudioGraph();
+
+  if (!audioContext || audioContext.state !== "running" || !sfxGainNode) {
+    return;
+  }
+
+  let cursor = audioContext.currentTime;
+
+  notes.forEach((note) => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = note.type || "square";
+    oscillator.frequency.setValueAtTime(note.frequency, cursor);
+    gain.gain.setValueAtTime(0.0001, cursor);
+    gain.gain.linearRampToValueAtTime(volume, cursor + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, cursor + note.duration);
+
+    oscillator.connect(gain);
+    gain.connect(sfxGainNode);
+    oscillator.start(cursor);
+    oscillator.stop(cursor + note.duration + 0.02);
+
+    cursor += note.duration + (note.gap ?? 0.015);
+  });
+}
+
+function playUiSound(kind) {
+  switch (kind) {
+    case "hover":
+      playToneSequence([{ frequency: 740, duration: 0.04, type: "square" }], 0.035);
+      break;
+    case "click":
+      playToneSequence(
+        [
+          { frequency: 620, duration: 0.05, type: "square" },
+          { frequency: 820, duration: 0.06, type: "square" }
+        ],
+        0.05
+      );
+      break;
+    case "boot":
+      playToneSequence(
+        [
+          { frequency: 392, duration: 0.08, type: "triangle" },
+          { frequency: 523, duration: 0.08, type: "triangle" },
+          { frequency: 784, duration: 0.12, type: "triangle" }
+        ],
+        0.06
+      );
+      break;
+    case "start":
+      playToneSequence(
+        [
+          { frequency: 330, duration: 0.07, type: "square" },
+          { frequency: 440, duration: 0.07, type: "square" },
+          { frequency: 660, duration: 0.12, type: "square" }
+        ],
+        0.07
+      );
+      break;
+    case "jump":
+      playToneSequence([{ frequency: 720, duration: 0.08, type: "triangle" }], 0.05);
+      break;
+    case "bill":
+      playToneSequence([{ frequency: 510, duration: 0.04, type: "square" }], 0.04);
+      break;
+    case "bust":
+      playToneSequence(
+        [
+          { frequency: 260, duration: 0.08, type: "sawtooth" },
+          { frequency: 180, duration: 0.14, type: "sawtooth" }
+        ],
+        0.06
+      );
+      break;
+    case "submit":
+      playToneSequence(
+        [
+          { frequency: 523, duration: 0.06, type: "triangle" },
+          { frequency: 659, duration: 0.06, type: "triangle" },
+          { frequency: 880, duration: 0.12, type: "triangle" }
+        ],
+        0.06
+      );
+      break;
+    default:
+      break;
+  }
+}
+
+function bindArcadeSound(target, { hover = true, click = true } = {}) {
+  if (!target || target.dataset.arcadeSoundBound === "true") {
+    return;
+  }
+
+  target.dataset.arcadeSoundBound = "true";
+
+  if (hover) {
+    target.addEventListener("pointerenter", () => {
+      playUiSound("hover");
+    });
+  }
+
+  if (click) {
+    target.addEventListener("click", () => {
+      playUiSound("click");
+    });
+  }
+}
+
+function bindStaticUiSounds() {
+  [
+    ...jumpButtons,
+    ...touchButtons,
+    ...transportButtons,
+    ...eqActionButtons,
+    resetButton,
+    leaderboardSubmitEl,
+    bootSkipButtonEl,
+    ...document.querySelectorAll(".menu-button")
+  ].forEach((element) => bindArcadeSound(element));
+}
+
+async function unlockArcadeAudio() {
+  if (audioUnlocked) {
+    return;
+  }
+
+  try {
+    await resumeAudioContext();
+  } catch {
+    // Ignore audio unlock failures.
   }
 }
 
@@ -861,10 +1177,7 @@ function enrichTrack(row) {
 
 async function fetchPlaylistTracksFromSupabase() {
   const response = await fetch(PLAYLIST_ENDPOINT, {
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-    },
+    headers: SUPABASE_HEADERS,
     cache: "no-store"
   });
 
@@ -905,9 +1218,12 @@ function renderTracklist() {
         loadTrack(index, { autoplay: true });
       }
     });
+    bindArcadeSound(item);
 
     winampTracklistEl.append(item);
   });
+
+  renderBoomboxRack();
 }
 
 async function playCurrentTrack() {
@@ -990,6 +1306,18 @@ function updateTrackMeta(track) {
   if (winampSeekEl) {
     winampSeekEl.value = "0";
     winampSeekEl.max = "100";
+  }
+
+  if (boomboxTrackTitleEl) {
+    boomboxTrackTitleEl.textContent = track.title;
+  }
+
+  if (boomboxTrackMetaEl) {
+    boomboxTrackMetaEl.textContent = `${track.artist} • ${track.durationLabel}`;
+  }
+
+  if (cassetteSideLabelEl) {
+    cassetteSideLabelEl.textContent = getCassetteSideLabel(currentTrackIndex);
   }
 }
 
@@ -1092,6 +1420,220 @@ async function initPlaylist() {
   loadTrack(0);
 }
 
+function getCassetteSideLabel(index) {
+  return index < 5 ? "SIDE A" : "SIDE B";
+}
+
+function renderBoomboxRack() {
+  if (!boomboxTapeRackEl) {
+    return;
+  }
+
+  boomboxTapeRackEl.innerHTML = "";
+
+  playlistTracks.forEach((track, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `cassette-chip${index === currentTrackIndex ? " is-active" : ""}`;
+    button.dataset.index = String(index);
+
+    const slot = document.createElement("span");
+    slot.textContent = `TAPE ${String(index + 1).padStart(2, "0")} • ${getCassetteSideLabel(index)}`;
+
+    const title = document.createElement("strong");
+    title.textContent = track.title;
+
+    button.append(slot, title);
+    button.addEventListener("click", () => {
+      loadTrack(index, { autoplay: true });
+    });
+    bindArcadeSound(button);
+    boomboxTapeRackEl.append(button);
+  });
+}
+
+function qualifiesForLeaderboard(score) {
+  if (!Number.isFinite(score) || score <= 0) {
+    return false;
+  }
+
+  if (leaderboardEntries.length < LEADERBOARD_LIMIT) {
+    return true;
+  }
+
+  return score >= leaderboardEntries[leaderboardEntries.length - 1].score;
+}
+
+function updateLeaderboardFormState() {
+  const eligible = qualifiesForLeaderboard(pendingLeaderboardScore);
+
+  if (leaderboardNameEl) {
+    leaderboardNameEl.disabled = !eligible || !leaderboardOnline;
+  }
+
+  if (leaderboardSubmitEl) {
+    leaderboardSubmitEl.disabled = !eligible || !leaderboardOnline || leaderboardSubmitted;
+  }
+
+  if (!leaderboardNoteEl) {
+    return;
+  }
+
+  if (!leaderboardOnline) {
+    leaderboardNoteEl.textContent = "Leaderboard offline right now. Your run still counts locally.";
+    return;
+  }
+
+  if (leaderboardSubmitted) {
+    leaderboardNoteEl.textContent = "Your name is on the wall. Run it back and go higher.";
+    return;
+  }
+
+  if (game.mode === "live") {
+    leaderboardNoteEl.textContent = "Catch bills, dodge cuffs, and chase the top five.";
+    return;
+  }
+
+  if (pendingLeaderboardScore == null) {
+    leaderboardNoteEl.textContent = "Finish a run, drop your tag, and crack the top five.";
+    return;
+  }
+
+  if (eligible) {
+    leaderboardNoteEl.textContent = `You made the wall with ${pendingLeaderboardScore} points. Drop your tag.`;
+    return;
+  }
+
+  if (leaderboardEntries.length === LEADERBOARD_LIMIT) {
+    const gap = Math.max(
+      1,
+      leaderboardEntries[leaderboardEntries.length - 1].score - pendingLeaderboardScore + 1
+    );
+    leaderboardNoteEl.textContent = `Need ${gap} more point${gap === 1 ? "" : "s"} to crack the top five.`;
+    return;
+  }
+}
+
+function renderLeaderboard() {
+  if (!leaderboardListEl) {
+    return;
+  }
+
+  leaderboardListEl.innerHTML = "";
+
+  for (let index = 0; index < LEADERBOARD_LIMIT; index += 1) {
+    const entry = leaderboardEntries[index];
+    const item = document.createElement("li");
+
+    if (!entry) {
+      item.className = "is-empty";
+    }
+
+    const rank = document.createElement("span");
+    rank.className = "leaderboard-rank";
+    rank.textContent = `#${index + 1}`;
+
+    const name = document.createElement("span");
+    name.className = "leaderboard-name";
+    name.textContent = entry?.player_name || "OPEN SLOT";
+
+    const score = document.createElement("span");
+    score.className = "leaderboard-score";
+    score.textContent = entry ? `${entry.score} PTS` : "--";
+
+    item.append(rank, name, score);
+    leaderboardListEl.append(item);
+  }
+
+  updateLeaderboardFormState();
+}
+
+async function fetchLeaderboard() {
+  try {
+    const response = await fetch(LEADERBOARD_ENDPOINT, {
+      headers: SUPABASE_HEADERS,
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Leaderboard request failed with ${response.status}`);
+    }
+
+    leaderboardEntries = await response.json();
+    leaderboardOnline = true;
+  } catch (error) {
+    leaderboardEntries = [];
+    leaderboardOnline = false;
+    console.error(error);
+  }
+
+  renderLeaderboard();
+}
+
+async function submitLeaderboardScore(name) {
+  const cleanName = sanitizePlayerName(name);
+  const score = pendingLeaderboardScore;
+
+  if (!cleanName) {
+    if (leaderboardNoteEl) {
+      leaderboardNoteEl.textContent = "Drop a name first, then send it to the wall.";
+    }
+    return;
+  }
+
+  if (!qualifiesForLeaderboard(score) || !leaderboardOnline) {
+    updateLeaderboardFormState();
+    return;
+  }
+
+  const response = await fetch(LEADERBOARD_SUBMIT_ENDPOINT, {
+    method: "POST",
+    headers: {
+      ...SUPABASE_HEADERS,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify({
+      player_name: cleanName,
+      score
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Leaderboard submit failed with ${response.status}`);
+  }
+
+  leaderboardSubmitted = true;
+  playUiSound("submit");
+  showStatus(`${cleanName} hit the wall with ${score} points.`, 2200);
+  pendingLeaderboardScore = null;
+  if (leaderboardNameEl) {
+    leaderboardNameEl.value = "";
+  }
+  await fetchLeaderboard();
+}
+
+function dismissBootOverlay() {
+  if (!bootOverlayEl?.classList.contains("is-hidden")) {
+    bootOverlayEl?.classList.add("is-hidden");
+    document.body.classList.remove("is-booting");
+    playUiSound("boot");
+  }
+}
+
+function startBootSequence() {
+  if (!bootOverlayEl) {
+    return;
+  }
+
+  document.body.classList.add("is-booting");
+  bootOverlayEl.classList.remove("is-hidden");
+  window.clearTimeout(bootTimer);
+  bootTimer = window.setTimeout(() => {
+    dismissBootOverlay();
+  }, 2600);
+}
+
 function drawContainedAsset(asset, x, y, width, height) {
   if (!asset?.loaded) {
     return;
@@ -1131,13 +1673,31 @@ function drawBackground() {
   ctx.fillStyle = "rgba(5, 8, 18, 0.26)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  for (let index = 0; index < 28; index += 1) {
-    const x = ((index * 37) + game.elapsedMs * 0.08) % (canvas.width + 40) - 20;
-    const y = (index * 29 + game.elapsedMs * 0.18) % (GROUND_Y - 10);
-    const length = 6 + (index % 4) * 3;
+  if (currentAtmosphere?.skyTint) {
+    ctx.fillStyle = currentAtmosphere.skyTint;
+    ctx.fillRect(0, 0, canvas.width, GROUND_Y);
+  }
 
-    ctx.fillStyle = index % 5 === 0 ? "rgba(255, 223, 112, 0.32)" : "rgba(116, 219, 255, 0.16)";
-    ctx.fillRect(x, y, 1, length);
+  if (currentAtmosphere?.stars) {
+    for (let index = 0; index < 28; index += 1) {
+      const x = ((index * 37) + game.elapsedMs * 0.08) % (canvas.width + 40) - 20;
+      const y = (index * 29 + game.elapsedMs * 0.18) % (GROUND_Y - 10);
+      const length = 6 + (index % 4) * 3;
+
+      ctx.fillStyle =
+        index % 5 === 0
+          ? "rgba(255, 223, 112, 0.32)"
+          : currentAtmosphere.rainTrailColor;
+      ctx.fillRect(x, y, 1, length);
+    }
+  } else {
+    for (let index = 0; index < 12; index += 1) {
+      const x = ((index * 41) + game.elapsedMs * 0.06) % (canvas.width + 50) - 25;
+      const y = 24 + ((index * 21) % (GROUND_Y - 60));
+
+      ctx.fillStyle = currentAtmosphere?.rainTrailColor || "rgba(193, 233, 255, 0.18)";
+      ctx.fillRect(x, y, 1, 5);
+    }
   }
 
   ctx.fillStyle = "rgba(5, 7, 15, 0.78)";
@@ -1317,7 +1877,14 @@ function handleKeyChange(event, isDown) {
   }
 }
 
-window.addEventListener("keydown", (event) => handleKeyChange(event, true));
+window.addEventListener("pointerdown", () => {
+  unlockArcadeAudio();
+}, { passive: true });
+
+window.addEventListener("keydown", (event) => {
+  unlockArcadeAudio();
+  handleKeyChange(event, true);
+});
 window.addEventListener("keyup", (event) => handleKeyChange(event, false));
 
 jumpButtons.forEach((button) => {
@@ -1331,6 +1898,11 @@ jumpButtons.forEach((button) => {
 
 resetButton.addEventListener("click", () => {
   resetRound();
+});
+
+bootSkipButtonEl?.addEventListener("click", () => {
+  window.clearTimeout(bootTimer);
+  dismissBootOverlay();
 });
 
 transportButtons.forEach((button) => {
@@ -1397,6 +1969,7 @@ playlistAudioEl?.addEventListener("loadedmetadata", () => {
 
   updatePlayerProgress();
   renderTracklist();
+  updateTrackMeta(playlistTracks[currentTrackIndex]);
 });
 
 playlistAudioEl?.addEventListener("timeupdate", updatePlayerProgress);
@@ -1429,6 +2002,27 @@ playlistAudioEl?.addEventListener("error", () => {
 
   if (musicPlayerDescriptionEl) {
     musicPlayerDescriptionEl.textContent = "Track failed to load on this browser.";
+  }
+});
+
+leaderboardNameEl?.addEventListener("input", () => {
+  const clean = sanitizePlayerName(leaderboardNameEl.value);
+  if (leaderboardNameEl.value !== clean) {
+    leaderboardNameEl.value = clean;
+  }
+});
+
+leaderboardFormEl?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  try {
+    await submitLeaderboardScore(leaderboardNameEl?.value || "");
+  } catch (error) {
+    console.error(error);
+    showStatus("Score upload missed. Try again in a second.", 1800);
+    if (leaderboardNoteEl) {
+      leaderboardNoteEl.textContent = "Score upload missed. Try again.";
+    }
   }
 });
 
@@ -1470,6 +2064,10 @@ touchButtons.forEach((button) => {
 game.best = loadBestScore();
 updateHud();
 syncEqActionButtons();
+bindStaticUiSounds();
+startAtmosphereClock();
 resetRound();
 requestAnimationFrame(frame);
+startBootSequence();
+fetchLeaderboard();
 initPlaylist();

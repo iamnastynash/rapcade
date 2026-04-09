@@ -8,9 +8,26 @@
       name="description"
       content="Retro landing page and mini game prototype for IAM NASTY NASH."
     />
-    <link rel="stylesheet" href="styles/main.css" />
+    <link rel="stylesheet" href="styles/main.css?v=20260409-006" />
   </head>
   <body>
+    <div class="boot-overlay" id="bootOverlay" aria-live="polite">
+      <div class="boot-panel">
+        <p class="boot-station">WNSH 88.8 FM</p>
+        <h2>LIVE FROM RAPCADE CITY</h2>
+        <p class="boot-message" id="bootMessage">Booting the skyline and warming up the deck.</p>
+        <p class="boot-time" id="bootStationTime">00:00 AM</p>
+        <div class="boot-loader" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <button class="boot-skip" id="bootSkipButton" type="button">SKIP INTRO</button>
+      </div>
+    </div>
+
     <div class="page-shell">
       <div class="sky-grid" aria-hidden="true"></div>
       <div class="cityline" aria-hidden="true">
@@ -63,6 +80,29 @@
           <div class="status-stack">
             <section class="info-card winamp-card" id="music-zone">
               <div class="winamp-stack">
+                <section class="broadcast-strip" aria-label="Rapcade radio station">
+                  <span class="broadcast-station">WNSH 88.8 FM</span>
+                  <p id="broadcastCopy">After-hours signal loading.</p>
+                  <span id="broadcastTime">00:00 AM</span>
+                </section>
+
+                <section class="boombox-card" aria-label="Cassette selector">
+                  <div class="boombox-header">
+                    <span class="boombox-brand">NASHBOX-88</span>
+                    <span class="boombox-atmosphere" id="boomboxAtmosphere">MIDNIGHT SIGNAL</span>
+                  </div>
+
+                  <div class="boombox-body">
+                    <div class="cassette-window">
+                      <span class="cassette-side" id="cassetteSideLabel">SIDE A</span>
+                      <strong id="boomboxTrackTitle">LOADING TAPE</strong>
+                      <p id="boomboxTrackMeta">INSERT CASSETTE</p>
+                    </div>
+
+                    <div class="cassette-rack" id="boomboxTapeRack"></div>
+                  </div>
+                </section>
+
                 <section class="winamp-window winamp-main-window">
                   <div class="winamp-titlebar">
                     <span>RAPCADE WINAMP</span>
@@ -205,6 +245,38 @@
             </div>
           </div>
 
+          <div class="leaderboard-shell">
+            <section class="leaderboard-card">
+              <div class="leaderboard-head">
+                <p class="game-label">High Score Wall</p>
+                <h3>TOP 5 CREWS</h3>
+              </div>
+
+              <ol class="leaderboard-list" id="leaderboardList" aria-live="polite"></ol>
+            </section>
+
+            <form class="leaderboard-form" id="leaderboardForm">
+              <p class="game-label">Tag Your Run</p>
+              <h3>ENTER THE WALL</h3>
+              <label class="sr-only" for="leaderboardName">Player name</label>
+              <input
+                id="leaderboardName"
+                name="leaderboardName"
+                type="text"
+                inputmode="text"
+                maxlength="12"
+                autocomplete="nickname"
+                placeholder="YOUR NAME"
+              />
+              <button class="leaderboard-button" id="leaderboardSubmit" type="submit">
+                SUBMIT SCORE
+              </button>
+              <p class="leaderboard-note" id="leaderboardNote">
+                Finish a run, drop your tag, and crack the top five.
+              </p>
+            </form>
+          </div>
+
           <div class="touch-controls" aria-label="Mobile controls">
             <button type="button" data-touch="left">LEFT</button>
             <button type="button" data-touch="jump">JUMP</button>
@@ -214,6 +286,6 @@
       </main>
     </div>
 
-    <script type="module" src="scripts/game.js?v=20260409-005"></script>
+    <script type="module" src="scripts/game.js?v=20260409-006"></script>
   </body>
 </html>
