@@ -335,6 +335,8 @@ a,
 }
 
 .menu-button {
+  display: inline-grid;
+  place-items: center;
   width: 100%;
   min-width: 0;
   padding: 14px 18px;
@@ -345,6 +347,7 @@ a,
   color: var(--text);
   font-size: 0.9rem;
   letter-spacing: 0.14rem;
+  text-decoration: none;
   box-shadow: 6px 6px 0 rgba(64, 246, 255, 0.28);
   transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
@@ -394,6 +397,36 @@ a,
 .menu-button-secondary {
   border-color: rgba(64, 246, 255, 0.9);
   box-shadow: 6px 6px 0 rgba(255, 73, 217, 0.22);
+}
+
+.donate-button {
+  gap: 8px;
+  padding: 18px 20px 16px;
+  border-color: rgba(255, 221, 57, 0.95);
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 206, 78, 0.26), transparent 60%),
+    linear-gradient(180deg, rgba(28, 20, 8, 0.98), rgba(18, 10, 4, 0.98));
+  color: #fff7c4;
+  box-shadow:
+    0 0 0 1px rgba(255, 221, 57, 0.12),
+    6px 6px 0 rgba(64, 246, 255, 0.28),
+    0 0 24px rgba(255, 206, 78, 0.16);
+}
+
+.donate-card-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.18rem;
+  color: #ffd36e;
+}
+
+.donate-card-main {
+  font-size: clamp(1.1rem, 2vw, 1.7rem);
+  letter-spacing: 0.12rem;
+  color: #fff4b8;
+  text-shadow:
+    0 0 0 #000,
+    3px 3px 0 rgba(255, 73, 217, 0.48),
+    0 0 16px rgba(255, 206, 78, 0.22);
 }
 
 .status-stack {
@@ -1112,6 +1145,20 @@ a,
 
   .winamp-tracklist {
     min-height: 188px;
+  }
+
+  .canvas-shell {
+    display: grid;
+    gap: 12px;
+  }
+
+  .reset-button {
+    position: static;
+    right: auto;
+    bottom: auto;
+    justify-self: end;
+    margin: 0 12px 12px;
+    transform: none;
   }
 
   .touch-controls {
