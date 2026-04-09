@@ -1,5 +1,9 @@
 node_modules/
 .DS_Store
+.swift-module-cache/
+**/__MACOSX/
+**/._*
 
 # Local upload staging copies
 supabase/upload/
+supabase/.temp/
