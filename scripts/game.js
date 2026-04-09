@@ -23,11 +23,6 @@ const broadcastTimeEl = document.getElementById("broadcastTime");
 const musicPlayerTypeEl = document.getElementById("musicPlayerType");
 const musicPlayerTitleEl = document.getElementById("musicPlayerTitle");
 const musicPlayerDescriptionEl = document.getElementById("musicPlayerDescription");
-const boomboxAtmosphereEl = document.getElementById("boomboxAtmosphere");
-const boomboxTrackTitleEl = document.getElementById("boomboxTrackTitle");
-const boomboxTrackMetaEl = document.getElementById("boomboxTrackMeta");
-const cassetteSideLabelEl = document.getElementById("cassetteSideLabel");
-const boomboxTapeRackEl = document.getElementById("boomboxTapeRack");
 const winampTracklistEl = document.getElementById("winampTracklist");
 const winampClockEl = document.getElementById("winampClock");
 const winampLedPlayEl = document.querySelector(".winamp-led-play");
@@ -421,10 +416,6 @@ function applyAtmosphere(date = new Date()) {
 
   if (broadcastTimeEl) {
     broadcastTimeEl.textContent = clockLabel;
-  }
-
-  if (boomboxAtmosphereEl) {
-    boomboxAtmosphereEl.textContent = currentAtmosphere.label;
   }
 }
 
@@ -1307,18 +1298,6 @@ function updateTrackMeta(track) {
     winampSeekEl.value = "0";
     winampSeekEl.max = "100";
   }
-
-  if (boomboxTrackTitleEl) {
-    boomboxTrackTitleEl.textContent = track.title;
-  }
-
-  if (boomboxTrackMetaEl) {
-    boomboxTrackMetaEl.textContent = `${track.artist} • ${track.durationLabel}`;
-  }
-
-  if (cassetteSideLabelEl) {
-    cassetteSideLabelEl.textContent = getCassetteSideLabel(currentTrackIndex);
-  }
 }
 
 function loadTrack(index, { autoplay = false, forceFallback = false } = {}) {
@@ -1418,38 +1397,6 @@ async function initPlaylist() {
 
   renderTracklist();
   loadTrack(0);
-}
-
-function getCassetteSideLabel(index) {
-  return index < 5 ? "SIDE A" : "SIDE B";
-}
-
-function renderBoomboxRack() {
-  if (!boomboxTapeRackEl) {
-    return;
-  }
-
-  boomboxTapeRackEl.innerHTML = "";
-
-  playlistTracks.forEach((track, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `cassette-chip${index === currentTrackIndex ? " is-active" : ""}`;
-    button.dataset.index = String(index);
-
-    const slot = document.createElement("span");
-    slot.textContent = `TAPE ${String(index + 1).padStart(2, "0")} • ${getCassetteSideLabel(index)}`;
-
-    const title = document.createElement("strong");
-    title.textContent = track.title;
-
-    button.append(slot, title);
-    button.addEventListener("click", () => {
-      loadTrack(index, { autoplay: true });
-    });
-    bindArcadeSound(button);
-    boomboxTapeRackEl.append(button);
-  });
 }
 
 function qualifiesForLeaderboard(score) {
