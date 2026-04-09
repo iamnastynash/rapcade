@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IAM NASTY NASH | RAPCADE</title>
+    <meta
+      name="description"
+      content="Retro landing page and mini game prototype for IAM NASTY NASH."
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="sky-grid" aria-hidden="true"></div>
+      <div class="cityline" aria-hidden="true">
+        <span class="tower tower-a"></span>
+        <span class="tower tower-b"></span>
+        <span class="tower tower-c"></span>
+        <span class="tower tower-d"></span>
+        <span class="tower tower-e"></span>
+        <span class="tower tower-f"></span>
+        <span class="tower tower-g"></span>
+        <div class="street"></div>
+        <div class="sewer-glow"></div>
+      </div>
+
+      <div class="marquee">
+        <div class="marquee-track">
+          * NEW ALBUM COMING SOON * HELP NASTY GET MONEY FOR STUDIO SESSIONS * * NEW ALBUM COMING SOON * HELP NASTY GET MONEY FOR STUDIO SESSIONS *
+        </div>
+      </div>
+
+      <main class="arcade-frame">
+        <section class="top-row">
+          <div class="hero-copy">
+            <div class="hero-glow" aria-hidden="true"></div>
+            <p class="eyebrow">IAM NASTY NASH</p>
+            <h1 class="hero-title">
+              <span>RAP</span>CADE
+            </h1>
+
+            <div class="menu-list">
+              <button class="menu-button start-card" type="button" data-jump="#game-zone">
+                <span class="start-card-label">START GAME</span>
+                <span class="start-card-blink">PRESS START</span>
+              </button>
+              <button class="menu-button menu-button-secondary" type="button" data-jump="#music-zone">
+                LISTEN TO MUSIC
+              </button>
+            </div>
+          </div>
+
+          <div class="status-stack">
+            <section class="info-card winamp-card" id="music-zone">
+              <div class="winamp-stack">
+                <section class="winamp-window winamp-main-window">
+                  <div class="winamp-titlebar">
+                    <span>RAPCADE WINAMP</span>
+                    <div class="winamp-title-controls" aria-hidden="true">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+
+                  <div class="winamp-main-grid">
+                    <div class="winamp-led-panel">
+                      <span class="winamp-led-play">PLAY</span>
+                      <strong class="winamp-led-time" id="winampClock">00:15</strong>
+                    </div>
+
+                    <div class="winamp-track-panel">
+                      <h3 id="musicPlayerTitle">Loading Player</h3>
+                      <p id="musicPlayerDescription">Queueing up the soundtrack.</p>
+                    </div>
+                  </div>
+
+                  <div class="winamp-spectrum" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span><span></span><span></span>
+                  </div>
+
+                  <div class="winamp-transport">
+                    <button class="winamp-control" type="button" data-player-action="prev">|&lt;&lt;</button>
+                    <button class="winamp-control" type="button" data-player-action="backward">&lt;&lt;</button>
+                    <button class="winamp-control" type="button" data-player-action="play">PLAY</button>
+                    <button class="winamp-control" type="button" data-player-action="pause">PAUSE</button>
+                    <button class="winamp-control" type="button" data-player-action="stop">STOP</button>
+                    <button class="winamp-control" type="button" data-player-action="forward">&gt;&gt;</button>
+                    <button class="winamp-control" type="button" data-player-action="next">&gt;&gt;|</button>
+                  </div>
+
+                  <div class="winamp-player-shell">
+                    <img id="winampCover" class="winamp-cover" src="assets/imported-album/unpacked/NASTYNASH - QUIEN DIJO QUE NO SE PUEDE [ALBUM]/QDQNSP COVER.png" alt="" />
+                    <div class="winamp-player-meta">
+                      <div class="winamp-seek-row">
+                        <span id="winampElapsed">00:00</span>
+                        <input id="winampSeek" class="winamp-range winamp-seek" type="range" min="0" max="100" step="0.1" value="0" />
+                        <span id="winampDuration">00:00</span>
+                      </div>
+
+                      <div class="winamp-volume-row">
+                        <span>VOL</span>
+                        <input id="winampVolume" class="winamp-range winamp-volume" type="range" min="0" max="100" step="1" value="88" />
+                      </div>
+
+                      <audio id="playlistAudio" preload="metadata"></audio>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="winamp-window winamp-eq-window">
+                  <div class="winamp-titlebar">
+                    <span>RAPCADE EQUALIZER</span>
+                    <div class="winamp-title-controls" aria-hidden="true">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+
+                  <div class="winamp-eq-header">
+                    <button class="winamp-eq-button" type="button" data-eq-action="toggle">ON</button>
+                    <button class="winamp-eq-button" type="button" data-eq-action="auto">AUTO</button>
+                    <button class="winamp-eq-button" type="button" data-eq-action="presets">PRESETS</button>
+                    <button class="winamp-eq-button" type="button" data-eq-action="reset">RESET</button>
+                  </div>
+
+                  <div class="winamp-eq-grid">
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="0" type="range" min="-12" max="12" step="0.5" value="0" /><span>70</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="1" type="range" min="-12" max="12" step="0.5" value="0" /><span>180</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="2" type="range" min="-12" max="12" step="0.5" value="0" /><span>320</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="3" type="range" min="-12" max="12" step="0.5" value="0" /><span>600</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="4" type="range" min="-12" max="12" step="0.5" value="0" /><span>1K</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="5" type="range" min="-12" max="12" step="0.5" value="0" /><span>3K</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="6" type="range" min="-12" max="12" step="0.5" value="0" /><span>6K</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="7" type="range" min="-12" max="12" step="0.5" value="0" /><span>12K</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="8" type="range" min="-12" max="12" step="0.5" value="0" /><span>14K</span></label>
+                    <label class="winamp-eq-slider"><input class="winamp-eq-range" data-eq-band="9" type="range" min="-12" max="12" step="0.5" value="0" /><span>16K</span></label>
+                  </div>
+                </section>
+
+                <section class="winamp-window winamp-playlist-window">
+                  <div class="winamp-titlebar">
+                    <span>RAPCADE PLAYLIST</span>
+                    <div class="winamp-title-controls" aria-hidden="true">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+
+                  <ol class="winamp-tracklist" id="winampTracklist"></ol>
+                </section>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="game-section" id="game-zone">
+          <div class="game-header">
+            <div>
+              <p class="game-label">Money Run</p>
+              <h2>CASH RAIN</h2>
+            </div>
+
+            <div class="hud-board">
+              <div class="hud-cell">
+                <span>Score</span>
+                <strong id="scoreValue">0</strong>
+              </div>
+              <div class="hud-cell">
+                <span>Time</span>
+                <strong id="timeValue">1:00</strong>
+              </div>
+              <div class="hud-cell">
+                <span>Best</span>
+                <strong id="bestValue">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="canvas-shell">
+            <canvas id="gameCanvas" width="480" height="270" aria-label="Retro money collection game"></canvas>
+            <button class="reset-button" id="resetButton" type="button">RESET RUN</button>
+          </div>
+
+          <div class="tip-strip">
+            <p id="statusLine">Move or jump to start the one-minute money rain.</p>
+            <div class="game-legend" aria-label="Scoring rules">
+              <span>BILLS = 1</span>
+              <span>COINS = 2</span>
+              <span>HANDCUFFS = BUST</span>
+            </div>
+          </div>
+
+          <div class="touch-controls" aria-label="Mobile controls">
+            <button type="button" data-touch="left">LEFT</button>
+            <button type="button" data-touch="jump">JUMP</button>
+            <button type="button" data-touch="right">RIGHT</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="scripts/game.js?v=20260409-005"></script>
+  </body>
+</html>
