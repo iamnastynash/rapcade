@@ -369,6 +369,13 @@ function formatClockTime(date) {
   });
 }
 
+function clearTextSelection() {
+  const selection = window.getSelection?.();
+  if (selection && selection.rangeCount > 0) {
+    selection.removeAllRanges();
+  }
+}
+
 function getAtmosphereKey(date = new Date()) {
   const hour = date.getHours();
 
@@ -1847,6 +1854,24 @@ resetButton.addEventListener("click", () => {
   resetRound();
 });
 
+["contextmenu", "selectstart", "dragstart"].forEach((eventName) => {
+  resetButton?.addEventListener(eventName, (event) => {
+    event.preventDefault();
+  });
+});
+
+resetButton?.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  clearTextSelection();
+  if (resetButton.setPointerCapture && event.pointerId !== undefined) {
+    try {
+      resetButton.setPointerCapture(event.pointerId);
+    } catch {
+      // Ignore capture failures on browsers that reject it.
+    }
+  }
+});
+
 bootSkipButtonEl?.addEventListener("click", () => {
   window.clearTimeout(bootTimer);
   dismissBootOverlay();
@@ -1977,6 +2002,8 @@ touchButtons.forEach((button) => {
   const action = button.dataset.touch;
 
   const release = () => {
+    clearTextSelection();
+
     if (action === "left") {
       keys.left = false;
     }
@@ -1986,8 +2013,22 @@ touchButtons.forEach((button) => {
     }
   };
 
+  ["contextmenu", "selectstart", "dragstart"].forEach((eventName) => {
+    button.addEventListener(eventName, (event) => {
+      event.preventDefault();
+    });
+  });
+
   button.addEventListener("pointerdown", (event) => {
     event.preventDefault();
+    clearTextSelection();
+    if (button.setPointerCapture && event.pointerId !== undefined) {
+      try {
+        button.setPointerCapture(event.pointerId);
+      } catch {
+        // Ignore capture failures on browsers that reject it.
+      }
+    }
     beginRunOnInput();
 
     if (action === "left") {
@@ -2006,6 +2047,7 @@ touchButtons.forEach((button) => {
   button.addEventListener("pointerup", release);
   button.addEventListener("pointerleave", release);
   button.addEventListener("pointercancel", release);
+  button.addEventListener("lostpointercapture", release);
 });
 
 game.best = loadBestScore();
