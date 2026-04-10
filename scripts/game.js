@@ -376,6 +376,11 @@ function clearTextSelection() {
   }
 }
 
+function blockTouchDefault(event) {
+  event.preventDefault();
+  clearTextSelection();
+}
+
 function getAtmosphereKey(date = new Date()) {
   const hour = date.getHours();
 
@@ -1860,6 +1865,10 @@ resetButton.addEventListener("click", () => {
   });
 });
 
+["touchstart", "touchmove", "touchend", "touchcancel"].forEach((eventName) => {
+  resetButton?.addEventListener(eventName, blockTouchDefault, { passive: false });
+});
+
 resetButton?.addEventListener("pointerdown", (event) => {
   event.preventDefault();
   clearTextSelection();
@@ -2017,6 +2026,10 @@ touchButtons.forEach((button) => {
     button.addEventListener(eventName, (event) => {
       event.preventDefault();
     });
+  });
+
+  ["touchstart", "touchmove", "touchend", "touchcancel"].forEach((eventName) => {
+    button.addEventListener(eventName, blockTouchDefault, { passive: false });
   });
 
   button.addEventListener("pointerdown", (event) => {

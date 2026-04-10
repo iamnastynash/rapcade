@@ -1205,6 +1205,7 @@ a,
 
 .status-banner {
   margin: 0 0 12px;
+  min-height: 2.6em;
   font-family: var(--menu-font);
   font-size: 0.78rem;
   line-height: 1.6;
@@ -1568,6 +1569,10 @@ a,
 }
 
 @media (hover: none) and (pointer: coarse) {
+  .status-banner {
+    min-height: 4.8em;
+  }
+
   .game-stage {
     display: grid;
     gap: 10px;
