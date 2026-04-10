@@ -381,6 +381,21 @@ function blockTouchDefault(event) {
   clearTextSelection();
 }
 
+let lastResetActivationAt = 0;
+
+function triggerResetButton(event) {
+  event?.preventDefault();
+  clearTextSelection();
+
+  const now = performance.now();
+  if (now - lastResetActivationAt < 250) {
+    return;
+  }
+
+  lastResetActivationAt = now;
+  resetRound();
+}
+
 function getAtmosphereKey(date = new Date()) {
   const hour = date.getHours();
 
@@ -1855,9 +1870,7 @@ jumpButtons.forEach((button) => {
   });
 });
 
-resetButton.addEventListener("click", () => {
-  resetRound();
-});
+resetButton.addEventListener("click", triggerResetButton);
 
 ["contextmenu", "selectstart", "dragstart"].forEach((eventName) => {
   resetButton?.addEventListener(eventName, (event) => {
@@ -1865,7 +1878,7 @@ resetButton.addEventListener("click", () => {
   });
 });
 
-["touchstart", "touchmove", "touchend", "touchcancel"].forEach((eventName) => {
+["touchstart", "touchmove", "touchcancel"].forEach((eventName) => {
   resetButton?.addEventListener(eventName, blockTouchDefault, { passive: false });
 });
 
@@ -1880,6 +1893,8 @@ resetButton?.addEventListener("pointerdown", (event) => {
     }
   }
 });
+
+resetButton?.addEventListener("pointerup", triggerResetButton);
 
 bootSkipButtonEl?.addEventListener("click", () => {
   window.clearTimeout(bootTimer);
