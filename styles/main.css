@@ -35,11 +35,18 @@
 
 html {
   scroll-behavior: smooth;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 73, 217, 0.2), transparent 26%),
+    radial-gradient(circle at 18% 12%, rgba(64, 246, 255, 0.16), transparent 25%),
+    linear-gradient(180deg, #120b27 0%, #0b0f2f 48%, #06070d 100%);
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   background:
     radial-gradient(circle at 50% 18%, rgba(255, 73, 217, 0.2), transparent 26%),
     radial-gradient(circle at 18% 12%, rgba(64, 246, 255, 0.16), transparent 25%),
@@ -87,7 +94,12 @@ body::after {
 .page-shell {
   position: relative;
   min-height: 100vh;
-  padding: 20px 20px 32px;
+  min-height: 100dvh;
+  padding:
+    calc(20px + env(safe-area-inset-top, 0px))
+    calc(20px + env(safe-area-inset-right, 0px))
+    calc(32px + env(safe-area-inset-bottom, 0px))
+    calc(20px + env(safe-area-inset-left, 0px));
   isolation: isolate;
 }
 
@@ -1467,7 +1479,11 @@ a,
 
 @media (max-width: 720px) {
   .page-shell {
-    padding: 14px 14px 24px;
+    padding:
+      calc(14px + env(safe-area-inset-top, 0px))
+      calc(14px + env(safe-area-inset-right, 0px))
+      calc(24px + env(safe-area-inset-bottom, 0px))
+      calc(14px + env(safe-area-inset-left, 0px));
   }
 
   .arcade-frame,
