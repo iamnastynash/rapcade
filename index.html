@@ -214,13 +214,25 @@
             </div>
           </div>
 
-          <div class="canvas-shell">
-            <canvas id="gameCanvas" width="480" height="270" aria-label="Retro money collection game"></canvas>
-            <button class="reset-button" id="resetButton" type="button">RESET RUN</button>
+          <p class="status-banner" id="statusLine">Move or jump to start the one-minute money rain.</p>
+
+          <div class="game-stage">
+            <div class="canvas-shell">
+              <canvas id="gameCanvas" width="480" height="270" aria-label="Retro money collection game"></canvas>
+            </div>
+
+            <div class="game-actions">
+              <div class="touch-controls" aria-label="Mobile controls">
+                <button type="button" data-touch="left">LEFT</button>
+                <button type="button" data-touch="jump">JUMP</button>
+                <button type="button" data-touch="right">RIGHT</button>
+              </div>
+
+              <button class="reset-button" id="resetButton" type="button">RESET RUN</button>
+            </div>
           </div>
 
           <div class="tip-strip">
-            <p id="statusLine">Move or jump to start the one-minute money rain.</p>
             <div class="game-legend" aria-label="Scoring rules">
               <span>BILLS = 1</span>
               <span>COINS = 2</span>
@@ -260,11 +272,6 @@
             </form>
           </div>
 
-          <div class="touch-controls" aria-label="Mobile controls">
-            <button type="button" data-touch="left">LEFT</button>
-            <button type="button" data-touch="jump">JUMP</button>
-            <button type="button" data-touch="right">RIGHT</button>
-          </div>
         </section>
       </main>
     </div>

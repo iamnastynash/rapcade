@@ -1203,6 +1203,15 @@ a,
   margin-bottom: 16px;
 }
 
+.status-banner {
+  margin: 0 0 12px;
+  font-family: var(--menu-font);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  letter-spacing: 0.06rem;
+  color: var(--lime);
+}
+
 .hud-board {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1236,12 +1245,28 @@ a,
 
 .canvas-shell {
   position: relative;
+  z-index: 1;
   overflow: hidden;
   border: 3px solid rgba(255, 73, 217, 0.7);
   background: #04060d;
   box-shadow:
     inset 0 0 36px rgba(64, 246, 255, 0.09),
     0 12px 30px rgba(0, 0, 0, 0.34);
+}
+
+.game-stage {
+  position: relative;
+}
+
+.game-actions {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
 }
 
 #gameCanvas {
@@ -1289,10 +1314,7 @@ a,
 }
 
 .reset-button {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  z-index: 3;
+  position: static;
   padding: 10px 12px;
   border: 2px solid rgba(255, 179, 71, 0.8);
   background: rgba(5, 7, 18, 0.84);
@@ -1306,18 +1328,9 @@ a,
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 14px;
   margin-top: 16px;
-}
-
-.tip-strip p {
-  margin: 0;
-  font-family: var(--menu-font);
-  font-size: 0.78rem;
-  line-height: 1.6;
-  letter-spacing: 0.06rem;
-  color: var(--lime);
 }
 
 .game-legend {
@@ -1342,7 +1355,7 @@ a,
   display: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .touch-controls button {
@@ -1454,6 +1467,7 @@ a,
   }
 
   .tip-strip {
+    margin-top: 12px;
     align-items: stretch;
   }
 
@@ -1497,28 +1511,24 @@ a,
     grid-column: 2;
   }
 
-  .canvas-shell {
-    overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
+  .game-stage {
+    display: grid;
+    gap: 10px;
   }
 
-  #gameCanvas {
-    border: 3px solid rgba(255, 73, 217, 0.7);
-    box-shadow:
-      inset 0 0 36px rgba(64, 246, 255, 0.09),
-      0 12px 30px rgba(0, 0, 0, 0.34);
+  .game-actions {
+    position: static;
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    justify-items: stretch;
   }
 
   .reset-button {
-    position: static;
-    display: inline-grid;
-    right: auto;
-    bottom: auto;
-    margin: 12px 0 0 auto;
+    order: 2;
+    justify-self: end;
+    margin: 0;
     padding: 10px 14px;
-    transform: none;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -1528,6 +1538,8 @@ a,
 
   .touch-controls {
     display: grid;
+    order: 1;
+    width: 100%;
   }
 
   .boot-panel {
